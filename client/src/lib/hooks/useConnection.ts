@@ -40,11 +40,8 @@ import { InspectorOAuthClientProvider } from "../auth";
 import packageJson from "../../../package.json";
 import {
   getMCPProxyAddress,
-  getMCPServerRequestMaxTotalTimeout,
-  resetRequestTimeoutOnProgress,
   getMCPProxyAuthToken,
 } from "@/utils/configUtils";
-import { getMCPServerRequestTimeout } from "@/utils/configUtils";
 import { InspectorConfig } from "../configurationTypes";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
@@ -117,13 +114,9 @@ export function useConnection({
       // prepare MCP Client request options
       const mcpRequestOptions: RequestOptions = {
         signal: options?.signal ?? abortController.signal,
-        resetTimeoutOnProgress:
-          options?.resetTimeoutOnProgress ??
-          resetRequestTimeoutOnProgress(config),
-        timeout: options?.timeout ?? getMCPServerRequestTimeout(config),
-        maxTotalTimeout:
-          options?.maxTotalTimeout ??
-          getMCPServerRequestMaxTotalTimeout(config),
+        resetTimeoutOnProgress: options?.resetTimeoutOnProgress ?? false,
+        timeout: options?.timeout ?? 10000, // 10 seconds default
+        maxTotalTimeout: options?.maxTotalTimeout ?? 60000, // 60 seconds default
       };
 
       // If progress notifications are enabled, add an onprogress hook to the MCP Client request options
@@ -244,7 +237,7 @@ export function useConnection({
     try {
       const proxyHealthUrl = new URL(`${getMCPProxyAddress(config)}/health`);
       const { token: proxyAuthToken, header: proxyAuthTokenHeader } =
-        getMCPProxyAuthToken(config);
+        getMCPProxyAuthToken();
       const headers: HeadersInit = {};
       if (proxyAuthToken) {
         headers[proxyAuthTokenHeader] = `Bearer ${proxyAuthToken}`;
@@ -334,7 +327,7 @@ export function useConnection({
 
       // Add proxy authentication
       const { token: proxyAuthToken, header: proxyAuthTokenHeader } =
-        getMCPProxyAuthToken(config);
+        getMCPProxyAuthToken();
       const proxyHeaders: HeadersInit = {};
       if (proxyAuthToken) {
         proxyHeaders[proxyAuthTokenHeader] = `Bearer ${proxyAuthToken}`;

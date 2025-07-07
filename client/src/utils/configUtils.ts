@@ -14,12 +14,6 @@ const getSearchParam = (key: string): string | null => {
 };
 
 export const getMCPProxyAddress = (config: InspectorConfig): string => {
-  let proxyFullAddress = config.MCP_PROXY_FULL_ADDRESS.value as string;
-  if (proxyFullAddress) {
-    proxyFullAddress = proxyFullAddress.replace(/\/+$/, "");
-    return proxyFullAddress;
-  }
-
   // Check for proxy port from query params, fallback to default
   const proxyPort =
     getSearchParam("MCP_PROXY_PORT") || DEFAULT_MCP_PROXY_LISTEN_PORT;
@@ -27,30 +21,14 @@ export const getMCPProxyAddress = (config: InspectorConfig): string => {
   return `${window.location.protocol}//${window.location.hostname}:${proxyPort}`;
 };
 
-export const getMCPServerRequestTimeout = (config: InspectorConfig): number => {
-  return config.MCP_SERVER_REQUEST_TIMEOUT.value as number;
-};
-
-export const resetRequestTimeoutOnProgress = (
-  config: InspectorConfig,
-): boolean => {
-  return config.MCP_REQUEST_TIMEOUT_RESET_ON_PROGRESS.value as boolean;
-};
-
-export const getMCPServerRequestMaxTotalTimeout = (
-  config: InspectorConfig,
-): number => {
-  return config.MCP_REQUEST_MAX_TOTAL_TIMEOUT.value as number;
-};
-
-export const getMCPProxyAuthToken = (
-  config: InspectorConfig,
-): {
+export const getMCPProxyAuthToken = (): {
   token: string;
   header: string;
 } => {
+  // For our simplified platform, we'll use a simple token from environment or URL params
+  const token = getSearchParam("MCP_PROXY_AUTH_TOKEN") || "";
   return {
-    token: config.MCP_PROXY_AUTH_TOKEN.value as string,
+    token,
     header: "X-MCP-Proxy-Auth",
   };
 };
